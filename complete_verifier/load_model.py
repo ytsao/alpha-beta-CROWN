@@ -286,6 +286,15 @@ def load_model(weights_loaded=True):
                             map_location=torch.device('cpu'))
             if 'state_dict' in sd:
                 sd = sd['state_dict']
+                if arguments.Config['model']['name'] == "ORCA_mnist_7x200_best":
+                    real_keyname = ['fc1.weight', 'fc1.bias', 'fc2.weight', 'fc2.bias', 'fc3.weight', 'fc3.bias', 'fc4.weight', 'fc4.bias', 'fc5.weight', 'fc5.bias', 'fc6.weight', 'fc6.bias', 'fc7.weight', 'fc7.bias', 'fc8.weight', 'fc8.bias']
+                    new_sd = OrderedDict()
+                    id = 0
+                    for _, v in sd.items():
+                        new_sd[real_keyname[id]] = v
+                        id+=1
+                    sd = new_sd
+                    
             if isinstance(sd, list):
                 sd = sd[0]
             if not isinstance(sd, dict):
