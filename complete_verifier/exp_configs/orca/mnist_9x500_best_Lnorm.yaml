@@ -23,8 +23,8 @@ general:
   output_file: out.pkl  # Path to the output file.
   return_optimized_model: false  # Return the model with optimized bounds after incomplete verification is done.
 model:
-  name: ORCA_mnist_5x100  # Model name. Will be evaluated as a python statement.
-  path: models/orca/mnist/5x100_orca.pth  # Load pretrained model from this specified path.
+  name: ORCA_mnist_9x500_best  # Model name. Will be evaluated as a python statement.
+  path: models/orca/mnist/9x500_best.pth  # Load pretrained model from this specified path.
   onnx_path: null  # Path to .onnx model file.
   onnx_path_prefix: ''  # Add a prefix to .onnx model path to correct malformed csv files.
   cache_onnx_conversion: false  # Cache the model converted from ONNX.

@@ -23,8 +23,8 @@ general:
   output_file: out.pkl  # Path to the output file.
   return_optimized_model: false  # Return the model with optimized bounds after incomplete verification is done.
 model:
-  name: ORCA_mnist_5x100  # Model name. Will be evaluated as a python statement.
-  path: models/orca/mnist/5x100_orca.pth  # Load pretrained model from this specified path.
+  name: ORCA_mnist_9x500_best  # Model name. Will be evaluated as a python statement.
+  path: models/orca/mnist/9x500_best.pth  # Load pretrained model from this specified path.
   onnx_path: null  # Path to .onnx model file.
   onnx_path_prefix: ''  # Add a prefix to .onnx model path to correct malformed csv files.
   cache_onnx_conversion: false  # Cache the model converted from ONNX.
@@ -45,7 +45,7 @@ data:
   mean: 0.0  # Mean vector used in data preprocessing.
   std: 1.0  # Std vector used in data preprocessing.
   pkl_path: null  # Load properties to verify from a .pkl file (only used for oval20 dataset).
-  dataset: MNIST  # Dataset name (only if not using specifications from a .csv file). Dataset must be defined in utils.py. For customized data, checkout custom/custom_model_data.py.
+  dataset: MNIST # Dataset name (only if not using specifications from a .csv file). Dataset must be defined in utils.py. For customized data, checkout custom/custom_model_data.py.
   data_idx_file: null  # A text file with a list of example IDs to run.
 specification:
   type: lp  # Type of verification specification. "lp" = L_p norm, "box" = element-wise lower and upper bound provided by dataloader.

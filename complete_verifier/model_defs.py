@@ -1710,6 +1710,27 @@ class Step_carvana(nn.Module):
 
 
 
+class ORCA_mnist_5x100_DiffAI(nn.Module):
+    def __init__(self):
+        super(ORCA_mnist_5x100_DiffAI, self).__init__()
+        self.fc1 = nn.Linear(in_features=784, out_features=100)
+        self.fc2 = nn.Linear(in_features=100, out_features=100)
+        self.fc3 = nn.Linear(in_features=100, out_features=100)
+        self.fc4 = nn.Linear(in_features=100, out_features=100)
+        self.fc5 = nn.Linear(in_features=100, out_features=100)
+        self.fc6 = nn.Linear(in_features=100, out_features=10)
+    
+    def forward(self, x):
+        x = x.view(-1, 28*28)
+        x = torch.relu(self.fc1(x))
+        x = torch.relu(self.fc2(x))
+        x = torch.relu(self.fc3(x))
+        x = torch.relu(self.fc4(x))
+        x = torch.relu(self.fc5(x))
+        x = self.fc6(x)
+        
+        return x
+
 
 class ORCA_mnist_7x200_best(nn.Module):
     def __init__(self):
@@ -1734,4 +1755,101 @@ class ORCA_mnist_7x200_best(nn.Module):
         x = torch.relu(self.fc7(x))
         x = self.fc8(x)
         
+        return x
+
+
+# classical CNN models
+
+# MNIST
+class ORCA_mnist_LeNet(nn.Module):
+    def __init__(self):
+        super(ORCA_mnist_LeNet, self).__init__()
+        self.conv1 = torch.nn.Conv2d(in_channels=1, out_channels=6, kernel_size=5, padding=2, stride=1)
+        self.conv2 = torch.nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5)
+
+        self.fc1 = torch.nn.Linear(in_features=16*5*5, out_features=120)
+        self.fc2 = torch.nn.Linear(in_features=120, out_features=84)
+        self.fc3 = torch.nn.Linear(in_features=84, out_features=10)
+
+        self.model_layers = ["conv", "relu", "max_pool", "conv", "relu", "max_pool",
+                            "flatten", "linear", "relu", "linear", "relu", "linear"]
+        
+    def forward(self, x):
+        x = torch.nn.functional.relu(self.conv1(x))
+        x = torch.nn.functional.max_pool2d(x, kernel_size=2)
+        x = torch.nn.functional.relu(self.conv2(x))
+        x = torch.nn.functional.max_pool2d(x, kernel_size=2)
+        x = x.view(-1, 16*5*5) # flatten
+        x = torch.nn.functional.relu(self.fc1(x))
+        x = torch.nn.functional.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
+    
+
+# MNIST
+class ORCA_mnist_AlexNet(nn.Module):
+    def __init__(self, num_classes):
+        super(ORCA_mnist_AlexNet, self).__init__()
+        self.conv1 = torch.nn.Conv2d(in_channels=3, out_channels=64, kernel_size=11, padding=2, stride=4)
+        self.conv2 = torch.nn.Conv2d(in_channels=64, out_channels=192, kernel_size=5, padding=2)
+        self.conv3 = torch.nn.Conv2d(in_channels=192, out_channels=384, kernel_size=3, padding=1)
+        self.conv4 = torch.nn.Conv2d(in_channels=384, out_channels=256, kernel_size=3, padding=1)
+        self.conv5 = torch.nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, padding=1)
+
+        self.fc1 = torch.nn.Linear(in_features=256*6*6, out_features=4096)
+        self.fc2 = torch.nn.Linear(in_features=4096, out_features=1024)
+        self.fc3 = torch.nn.Linear(in_features=1024, out_features=num_classes)
+
+        self.model_layers = []
+        
+    def forward(self, x):
+        x = torch.nn.functional.relu(self.conv1(x))
+        x = torch.nn.functional.max_pool2d(x, kernel_size=3, stride=2)
+        x = torch.nn.functional.relu(self.conv2(x))
+        x = torch.nn.functional.max_pool2d(x, kernel_size=3, stride=2)
+        x = torch.nn.functional.relu(self.conv3(x))
+        x = torch.nn.functional.relu(self.conv4(x))
+        x = torch.nn.functional.relu(self.conv5(x))
+        x = torch.nn.functional.max_pool2d(x, kernel_size=3, stride=2)
+        # x = x.view(-1, 256*6*6)
+        x = torch.flatten(x, 1)
+        x = torch.nn.functional.relu(self.fc1(x))
+        x = torch.nn.functional.dropout(x, p=0.5)
+        x = torch.nn.functional.relu(self.fc2(x))
+        x = torch.nn.functional.dropout(x, p=0.5)
+        x = self.fc3(x)
+        return x
+
+
+class ORCA_mnist_VGGNet(nn.Module):
+    def __init__(self, vgg_arch, num_classes):
+        super(ORCA_mnist_VGGNet, self).__init__()
+        self.features = self.vgg_block(vgg_arch)
+
+        self.fc1 = torch.nn.Linear(in_features=512*7*7, out_features=4096)
+        self.fc2 = torch.nn.Linear(in_features=4096, out_features=1024)
+        self.fc3 = torch.nn.Linear(in_features=1024, out_features=num_classes)
+
+    def vgg_block(self, vgg_arch):
+        layers = []
+        in_channels = 3
+
+        for v in vgg_arch:
+            if v == "M":
+                layers.append(torch.nn.MaxPool2d(kernel_size=2, stride=2))
+            else:
+                layers.append(torch.nn.Conv2d(in_channels=in_channels, out_channels=v, kernel_size=3, padding=1))
+                layers.append(torch.nn.ReLU())
+                in_channels = v
+        return torch.nn.Sequential(*layers)   
+
+    def forward(self, x):
+        x = self.features(x)
+
+        # x = x.view(x.size(0), -1)
+        x = torch.flatten(x, 1)
+        x = torch.nn.functional.relu(self.fc1(x))
+        x = torch.nn.functional.relu(self.fc2(x))
+        x = self.fc3(x)
+
         return x
